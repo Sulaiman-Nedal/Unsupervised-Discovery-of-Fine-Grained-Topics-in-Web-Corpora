@@ -1,0 +1,84 @@
+% ============================================================================
+%  Master's thesis -- OpenSearch@DLR 2.0, Work Package 2, Milestone 2.1
+%
+%  Unsupervised Discovery of Fine-Grained Topics in Web Corpora
+%
+%  Compile:  tectonic -X compile main.tex
+%       or:  pdflatex main.tex  (twice, for the table of contents)
+%  Standard packages only -- compiles as-is on Overleaf.
+% ============================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amssymb,amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{microtype}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage[hidelinks]{hyperref}
+
+% --- colours ----------------------------------------------------------------
+\definecolor{accent}{HTML}{12556A}
+\definecolor{good}{HTML}{2C6E49}
+\definecolor{bad}{HTML}{A33A3A}
+% diagram palette (Figure 1)
+\definecolor{boxblue}{HTML}{3D7DD8}
+\definecolor{fillblue}{HTML}{E3EDFB}
+\definecolor{boxgreen}{HTML}{1E9E63}
+\definecolor{fillgreen}{HTML}{E4F4EB}
+\definecolor{boxred}{HTML}{E2553A}
+\definecolor{fillred}{HTML}{FBE9E3}
+\definecolor{diagray}{HTML}{8A8A8A}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent,citecolor=accent}
+
+% --- spacing ----------------------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\captionsetup{font=small,labelfont=bf,labelsep=period}
+\renewcommand{\arraystretch}{1.15}
+
+% --- semantic commands ------------------------------------------------------
+% held / positive results and failed / retracted ones, marked consistently
+\newcommand{\gd}[1]{\textcolor{good}{\textbf{#1}}}
+\newcommand{\bd}[1]{\textcolor{bad}{\textbf{#1}}}
+% claim register: what kind of evidence stands behind a statement
+\newcommand{\proved}{\textcolor{accent}{\textsf{\footnotesize[proved]}}}
+\newcommand{\measured}{\textcolor{accent}{\textsf{\footnotesize[measured]}}}
+\newcommand{\tg}[1]{{\footnotesize\textsf{[#1]}}}
+
+\begin{document}
+
+\input{sections/titlepage}
+
+\input{sections/abstract}
+
+{\hypersetup{linkcolor=black}\tableofcontents}
+\clearpage
+
+\input{sections/introduction}
+\input{sections/relatedwork}
+\input{sections/method}
+\input{sections/experimental_design}
+\clearpage
+\input{sections/rq1}
+\input{sections/rq2}
+\input{sections/rq3}
+\input{sections/neutrality}
+\input{sections/setaside}
+\input{sections/failures}
+\input{sections/limitations}
+\input{sections/conclusion}
+\input{sections/appendix}
+
+\clearpage
+\input{sections/research_questions_answers}
+
+\end{document}

@@ -1,0 +1,48 @@
+% Existing questions and full draft answers retained for reference.
+\section*{Research questions and answers}
+\addcontentsline{toc}{section}{Research questions and answers}
+\label{sec:working-research-questions}
+
+\subsection*{RQ1 --- Can fine-grained topics be discovered with nothing labelled?}
+Can an unsupervised pipeline recover subject structure at the scale of a real web corpus,
+and what does it get wrong? (Section~\ref{sec:rq1})
+
+\paragraph{Answer.}
+\gd{Yes, with two qualifications.} Fine-grained subject topics can be recovered from an
+unlabelled bilingual web corpus at the scale of 616{,}499 documents, and every document can be
+assigned to one. But the corpus has no natural number of topics, so the resolution must be
+chosen on grounds other than geometry (RQ3); and roughly a fifth to a quarter of the
+discovered topics describe page roles rather than subjects, a failure the standard coherence
+metrics cannot detect.
+
+\subsection*{RQ2 --- Which feature should be embedded?}
+A web page offers body text, a title, a description, and a URL. Which of these, alone or in
+combination, should be given to the embedding model? (Section~\ref{sec:rq2})
+
+\paragraph{Answer.}
+\gd{Plain body text}, not because it produces the most coherent topics, which it does not in
+German, but because it is the only input present on every document and the only one that does
+not inherit a particular site's template conventions. \measured{} No variant reliably improves
+topic quality; \proved{} every alternative variant forfeits guaranteed coverage.
+
+\subsection*{RQ3 --- How much granularity is enough?}
+Topic models must be told, directly or indirectly, how fine to go. Is there a principled way
+to decide, and does that way transfer to corpora it was not fitted on? (Sections~\ref{sec:rq3}
+and~\ref{sec:neutrality})
+
+\paragraph{Answer.}
+\gd{Enough granularity is the setting that maximises the number of coarse topics that are real
+splits}, where a coarse topic is a real split when it has at least two fine children \emph{and} no
+two of those children are near-duplicates of each other. The first condition rules out renames;
+the second rules out divisions that are nominal. \measured{} On the motivating corpus this selects
+\textbf{min 100 in both languages}, 9 of 20 in English and 10 of 20 in German.
+
+The criterion needs no coherence metric and no human judgement. The threshold of two is
+definitional. The duplicate cutoff is a free parameter but is shown not to be load-bearing: the
+selected setting is identical for every cutoff from $0.34$ to $1.00$, and at $1.00$ the rule reduces to ``no two children have identical
+keyword lists'', which introduces no constant at all. Because the count is not monotone in the
+sweep direction, it identifies a setting rather than merely preferring the finest one available.
+
+It detects two failure modes that coherence-based selection cannot see: whole themes silently
+losing their fine representation, and fine topics that subdivide a theme in name only.
+

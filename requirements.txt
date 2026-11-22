@@ -1,0 +1,12 @@
+# Direct dependencies from the Python 3.11 development environment.
+numpy==2.4.6
+pandas==3.0.3
+pyarrow==24.0.0
+torch==2.4.1
+transformers==4.44.2
+tqdm==4.67.3
+scikit-learn==1.8.0
+bertopic==0.17.4
+hdbscan==0.8.44
+umap-learn==0.5.12
+sentence-transformers==5.5.1

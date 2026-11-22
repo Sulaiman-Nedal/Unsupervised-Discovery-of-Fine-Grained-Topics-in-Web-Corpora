@@ -1,0 +1,103 @@
+% Horizontal labeling flow, matching the discovery figure's style.
+% Real example values are checked against the saved sample and production files.
+\noindent\begin{minipage}{\linewidth}
+\centering
+\begin{tikzpicture}[
+  stage/.style = {rounded corners=4pt, draw, line width=0.8pt,
+                  text width=2.50cm, minimum height=2.30cm,
+                  align=center, inner xsep=4pt, inner ysep=5pt,
+                  font=\small\sffamily},
+  flow/.style = {-{Stealth[length=2.2mm,width=1.7mm]},
+                 line width=0.9pt, draw=black!65},
+  side/.style = {flow, dashed},
+]
+
+\node[font=\footnotesize\sffamily\bfseries, text=accent, align=center,
+      text width=2.6cm] at (0,3.45)
+  {Use the topics\\for the page's\\own language};
+
+\node[stage, minimum height=4.50cm, fill=fillblue, draw=boxblue] (input) at (0,0)
+  {\textbf{1 Input}\\[4pt]
+   Saved E5 vectors\\
+   One real example:\\[5pt]
+   {\footnotesize\ttfamily
+    [\\
+    0.008740,\\
+    0.031677,\\
+    -0.000636,\\
+    -0.018505,\\
+    0.019698,\\
+    \ldots ]}};
+
+\node[stage, fill=fillgreen, draw=boxgreen] (average) at (3.2,0)
+  {\textbf{2 Average}\\[4pt]
+   {\footnotesize\textbf{Sample only}\\[3pt]
+    Rescale vectors;\\
+    average by topic;\\
+    rescale again.}};
+
+\node[stage, fill=fillgreen, draw=boxgreen] (compare) at (6.4,0)
+  {\textbf{3 Compare}\\[4pt]
+   {\footnotesize Every page against\\
+    every topic vector.\\
+    Pick highest score.}};
+
+\node[stage, fill=black!3, draw=diagray] (flags) at (9.6,0)
+  {\textbf{4 Flags}\\[4pt]
+   {\footnotesize Mark repeated\\
+    website text and\\
+    code/data pages.}};
+
+\node[stage, minimum height=6.00cm, fill=fillblue, draw=boxblue] (output) at (12.8,0)
+  {\textbf{5 Output}\\[4pt]
+   {\scriptsize\ttfamily
+    uuid: ...3b2f\\
+    label: "85"\\
+    similarity:\\
+    0.982268\\
+    is\_boilerplate:\\
+    false\\
+    is\_non\_prose:\\
+    false}\\[6pt]
+   {\footnotesize\textbf{Topic 85 words}\\[3pt]
+    robot, path,\\
+    control, \ldots}};
+
+\draw[flow] (input.east) -- (average.west);
+\draw[flow] (average.east) -- (compare.west);
+\draw[flow] (compare.east) -- (flags.west);
+\draw[flow] (flags.east) -- (output.west);
+
+\node[stage, text width=9.30cm, minimum width=9.70cm,
+      minimum height=2.20cm, fill=black!3, draw=diagray,
+      align=left, font=\footnotesize\sffamily] (metadata) at (6.4,4.50)
+  {\textbf{Sample topic IDs from Section~\ref{sec:method-bertopic}, plus saved page and topic flags}\\[4pt]
+   For topic averages, leave out $-1$ and pages flagged as code or data dumps.\\[3pt]
+   Keep available topic vectors flagged as repeated website text.};
+
+\draw[side, draw=diagray] (metadata.south -| average.north) -- (average.north);
+\draw[side, draw=diagray] (metadata.south -| flags.north) -- (flags.north);
+
+\draw[flow, draw=boxblue] (input.south) -- (0,-3.15) --
+  node[below, font=\footnotesize\sffamily, text=boxblue] {All target pages}
+  (6.4,-3.15) -- (compare.south);
+
+\node[stage, text width=7.20cm, minimum height=1.15cm,
+      fill=fillred, draw=boxred] (coverage) at (6.4,-4.40)
+  {\textbf{Every page gets one label}\\[3pt]
+   There is no score cutoff.};
+\draw[side, draw=boxred] (flags.south) -- (9.6,-3.55) -| (coverage.north);
+
+\end{tikzpicture}
+\captionof{figure}{Document labeling from saved vectors to page labels.
+\measured{} The robotics page from Figure~\ref{fig:embedding-chunks} was marked $-1$ in
+Figure~\ref{fig:bertopic-pipeline} and receives topic 85 here.
+Only its first five saved vector values are shown. The page ID, vector and word list are
+abbreviated; the saved score is rounded. Sample vectors and topic averages are rescaled to
+length one. Comparison uses vector directions; ties go to the smallest topic ID.
+The flags mark repeated website text (\texttt{is\_boilerplate}) and code/data pages
+(\texttt{is\_non\_prose}). Words describe the chosen topic. The saved row comes from
+\texttt{doc\_labels.parquet} and the words from \texttt{topics.json}, under
+\texttt{output/production\_labels/eng/}. Topic 85 was not later divided.}
+\label{fig:labeling-pipeline}
+\end{minipage}

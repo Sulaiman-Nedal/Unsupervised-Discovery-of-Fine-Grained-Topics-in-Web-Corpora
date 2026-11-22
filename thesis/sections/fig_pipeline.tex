@@ -1,0 +1,54 @@
+% ---------------------------------------------------------- PIPELINE FIGURE
+\begin{figure}[!tb]
+\centering
+\begin{tikzpicture}[
+  box/.style   = {rounded corners=6pt, draw, line width=0.9pt, minimum width=9.0cm,
+                  minimum height=1.30cm, align=center, inner sep=7pt},
+  flow/.style  = {-{Stealth[length=3mm,width=2.4mm]}, line width=1.1pt, draw=black!72},
+  feed/.style  = {-{Stealth[length=2.6mm,width=2.1mm]}, line width=0.8pt, dashed,
+                  dash pattern=on 3.2pt off 2.6pt},
+]
+
+% ---- nodes -----------------------------------------------------------------
+\node[box, fill=black, draw=black, text=white] (data) at (0,0)
+  {{\large\bfseries DLR webpage data}\\[1pt]
+   {\footnotesize\color{black!25} Web pages $\cdot$ German $+$ English $\cdot$ no labels}};
+
+\node[box, fill=fillblue, draw=boxblue, below=0.80cm of data] (embed)
+  {{\footnotesize\scshape\color{boxblue} Embedding}\\[2pt]
+   {\large\bfseries E5 --- body text as embeddings}\\[1pt]
+   {\footnotesize multilingual-E5-large-instruct, 1024-dim}};
+
+\node[box, fill=fillgreen, draw=boxgreen, below=0.80cm of embed] (cluster)
+  {{\footnotesize\scshape\color{boxgreen} Clustering}\\[2pt]
+   {\large\bfseries BERTopic}\\[1pt]
+   {\footnotesize topics from a filtered sample, c-TF-IDF keywords}};
+
+\node[box, fill=fillred, draw=boxred, below=0.80cm of cluster] (label)
+  {{\large\bfseries Labelling}\\[1pt]
+   {\footnotesize\color{boxred} nearest centroid, all documents}};
+
+% ---- main flow -------------------------------------------------------------
+\draw[flow] (data)    -- (embed);
+\draw[flow] (embed)   -- node[right, font=\footnotesize, text=boxgreen] {sample} (cluster);
+\draw[flow] (cluster) -- (label);
+
+% ---- side feed: cleaned body text bypasses the embedder ------------------
+\coordinate (lrail) at ($(data.west)+(-1.30,0)$);
+\draw[feed, draw=diagray] (data.west) -- (lrail) |- (cluster.west);
+\node[rotate=90, font=\footnotesize\color{diagray}, anchor=south]
+  at ($(lrail)!0.5!(lrail|-cluster.west)+(-0.12,0)$) {cleaned body text};
+
+% ---- side feed: E5 vectors reused for assignment ---------------------------
+\coordinate (rrail) at ($(embed.east)+(1.30,0)$);
+\draw[feed, draw=boxblue] (embed.east) -- (rrail) |- (label.east);
+\node[rotate=-90, font=\footnotesize\color{boxblue}, anchor=south]
+  at ($(rrail)!0.5!(rrail|-label.east)+(0.12,0)$) {all E5 vectors};
+
+\end{tikzpicture}
+\caption{The core document-assignment pipeline. E5 embeds all documents; BERTopic learns topics
+from a filtered sample per language. The dashed paths supply cleaned body text for keywords
+and all E5 vectors for nearest-centroid assignment. Every document receives a topic, including
+those outside the sample.}
+\label{fig:pipeline}
+\end{figure}

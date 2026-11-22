@@ -1,0 +1,143 @@
+% Working outline: old prose cleared on 2026-11-09.
+\section{Explored and set aside}
+\label{sec:setaside}
+
+\subsection{Four topic models that did not survive benchmarking}
+\label{sec:setaside-models}
+
+English and German use separate topic-discovery runs. \measured{} An earlier mixed-language run
+produced mostly topics containing almost only English or almost only German documents.\footnote{
+In the combined-language BERTopic runs, approximately 72--75\% of topics
+had at least 95\% of their documents in one language. Noise assignments were excluded.
+The diagnostic is saved in \texttt{output/stage2\_clean/}\allowbreak\texttt{lang\_purity\_report.json}.}
+This motivated separate models.
+
+\subsection{A separate cross-granularity matching diagnostic}
+\label{sec:method-crossgran}
+
+This exploratory diagnostic compares coarse LDA topics with fine BERTopic topics. It is
+separate from the hierarchy used for RQ3 (Section~\ref{sec:rq3-hierarchy}) and leaves production
+labels unchanged. For each fine topic $f$, its candidate parent $c$ is the coarse topic with
+the largest document overlap. This adapts the pairing-strength idea from Bidirectional Topic
+Matching~\cite[p.~4, Eq.~(1)]{adam2024btm}.
+
+The script pairs the two models' assignments by page identifier. Overlap uses the resulting
+rows carrying non-noise labels from both models; repeated rows are retained. It is the share
+of those rows in $f$ whose coarse label is $c$.
+The \emph{lead} is the largest overlap minus the second-largest overlap, with a missing
+second share treated as zero. The candidate pair receives the weighted score
+
+\begin{equation}
+\mathrm{conf}(f, c) \;=\; 0.5 \cdot \mathrm{overlap}(f,c) \;+\; 0.3 \cdot \mathrm{sim}(f,c)
+\;+\; 0.2 \cdot \mathrm{bidir}(f,c)
+\end{equation}
+
+where $\mathrm{sim}$ is the cosine similarity between the two topic centroids. For each coarse
+topic, fine topics are ranked by overlap multiplied by their number of rows in the paired
+assignments. The indicator $\mathrm{bidir}$ is one when $f$ ranks among the top three for $c$, and zero
+otherwise. This is the contribution check used by the script.
+
+As in TopicCheck~\cite[pp.~177--178]{chuang2015topiccheck}, a topic may remain without an
+accepted match. This diagnostic applies its checks in the following order:
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt]
+\item \textsc{Reject} if overlap is below $0.35$ or similarity is below $0.25$.
+\item Otherwise, mark \textsc{ambiguous} if the lead is below $0.25$.
+\item Otherwise, mark \textsc{low confidence} if the weighted score is below $0.45$.
+\item Otherwise, accept the candidate as a \textsc{match}.
+\end{enumerate}
+
+\begin{table}[h]\centering
+\caption{Outcomes of the separate matching diagnostic at \texttt{min\_topic\_size=100}.
+Each fine topic contributes one decision.}
+\label{tab:crossgran}
+\begin{tabular}{lrrrr}
+\toprule
+Language & \textsc{match} & \textsc{ambiguous} & \textsc{low conf.} & \textsc{reject} \\
+\midrule
+English & 99 & 12 & 0 & 1 \\
+German  & 69 & 4  & 0 & 5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\measured{} The saved candidate-parent similarities range from $0.8927$ to $0.9993$ in English
+and from $0.9300$ to $0.9991$ in German. These ranges describe the parent selected for each fine
+topic. The saved files do not contain similarities for every possible fine--coarse pair.\footnote{\raggedright
+Ranges, score minima and decision counts are recomputed from
+\texttt{output/crossgran/}\allowbreak\texttt{crossgran\_\{eng,deu\}.json}.
+Each file stores one record per fine topic.}
+
+\measured{} No saved candidate failed the similarity check. Every rejection in
+Table~\ref{tab:crossgran} was caused by insufficient overlap. Among candidates reaching the
+weighted-score check, the lowest score was $0.5617$ in English and $0.4952$ in German.
+Both exceed its cutoff, explaining the empty \textsc{low confidence} category. A
+\textsc{match} label means only that the candidate passed these checks.
+
+\subsection{Automatically generated keywords versus a human keyword list}
+\label{sec:setaside-keywords}
+
+\subsection{Search speed: a real engineering result with no research claim}
+\label{sec:setaside-speed}
+
+\subsection{A hyperlink topic graph}
+\label{sec:setaside-graph}
+
+\subsection{Category-filtered search, and why it cannot support a quality claim}
+\label{sec:setaside-utility}
+
+\subsection{Persona prompting the embedder}
+\label{sec:setaside-persona}
+
+A persona instruction asks the model to adopt a role. An earlier comparison used the role of
+a research librarian. The motivation is given in Section~\ref{sec:method-embed}. The two
+instructions were:
+
+\begin{description}[leftmargin=1.3em,style=nextline,itemsep=3pt]
+\item[Original.] ``Identify the main research topic of this web page''
+\item[Librarian.] ``You are an expert research librarian. Identify the specific scientific
+research theme of this web page.''
+\end{description}
+
+These were exploratory runs before the final production setup. Each language sample contained
+50{,}000 entries, including some repeated pages. BERTopic used
+\texttt{min\_topic\_size=100} throughout. Table~\ref{tab:prompt-comparison} reports the saved scores after
+pages initially left outside any topic had been reassigned. Every sampled entry then received
+a topic.\footnote{\raggedright Scores are from
+\texttt{output/stage2\_lang/}\allowbreak\texttt{\{eng,deu\}/}\allowbreak\texttt{eval\_results.json}
+and \texttt{output/stage2\_lang\_persona/}\allowbreak\texttt{\{eng,deu\}/}\allowbreak\texttt{eval\_results.json},
+entry \texttt{BERTopic-min100-reduced}. Sample identities are stored in
+\texttt{sample\_data/sample\_data.parquet} under each language directory.}
+The scores are defined in Section~\ref{sec:method-metrics}. Word coherence used each run's
+sample texts. Silhouette used 10{,}000 sampled entries after UMAP reduced the vectors to
+50 coordinates.
+
+\noindent\begin{minipage}{\linewidth}
+\centering
+\captionof{table}{Earlier instruction comparison after reassignment. \emph{Topics} gives the
+number of discovered groups. Higher values are better for NPMI, $C_v$ and silhouette.}
+\label{tab:prompt-comparison}
+\begin{tabular}{llrrrr}
+\toprule
+Language & Instruction & Topics & NPMI & $C_v$ & Silhouette \\
+\midrule
+English & Original  & 110 & $-0.138$ & 0.429 & $-0.082$ \\
+English & Librarian & 109 & $-0.143$ & 0.464 & $-0.037$ \\
+German  & Original  &  77 & $-0.238$ & 0.402 & $-0.130$ \\
+German  & Librarian &  70 & $-0.251$ & 0.352 & $-0.227$ \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\measured{} With the librarian instruction, English $C_v$ and silhouette are higher, while
+NPMI is lower. In German, all three scores are lower. The changes therefore show no consistent
+gain across the scores and languages. German coherence covers only 65 of the original run's
+77 topics and 59 of the librarian run's 70 topics. The other topics had too few words in the
+evaluation vocabulary, the list retained for coherence scoring.
+
+The comparison has important limits. \measured{} The saved samples contain different pages
+and include repeated entries. Comparing their page identifiers gives 7{,}809 shared distinct
+English pages and 20{,}789 shared distinct German pages. The longer instruction also leaves
+less room for page text in each chunk.
+These differences prevent isolating the effect of instruction wording. This comparison covers
+one alternative instruction and does not establish that other prompts would fail.
+

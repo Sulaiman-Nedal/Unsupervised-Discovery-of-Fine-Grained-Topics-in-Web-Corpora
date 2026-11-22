@@ -1,0 +1,12 @@
+/pipeline/data/
+/pipeline/embeddings/
+/pipeline/output/
+/rq3/output/
+/.venv/
+__pycache__/
+*.pyc
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz

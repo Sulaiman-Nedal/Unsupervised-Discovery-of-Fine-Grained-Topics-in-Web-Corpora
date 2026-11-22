@@ -1,0 +1,46 @@
+% Working outline: old prose cleared on 2026-11-09.
+\section{RQ3 --- How much granularity is enough?}
+\label{sec:rq3}
+
+\subsection{Why this needs a new criterion}
+
+\subsection{Building the coarse--fine hierarchy}
+\label{sec:rq3-hierarchy}
+
+For this analysis, LDA supplies a fixed coarse reference and BERTopic supplies the fine
+topics. The models are fitted on the same sample for each language. The script
+\texttt{build\_topic\_hierarchy.py} selects a candidate parent for each fine topic: the coarse
+topic containing the largest share of its documents. It checks this share and the lead over
+the next-best parent. It also checks whether centroid similarity favours the same parent and
+whether the child is among that parent's largest document contributors.
+
+A link is rejected when overlap is weak, the candidate parents are nearly tied, or the
+centroid and reverse checks jointly oppose the candidate. A confidence score records
+agreement between these signals. The children counted below are those with accepted links;
+the rules are held fixed across the sweep. The saved mappings are in
+\texttt{output/hierarchy\_probe/}. Rejecting a link leaves a fine topic without an accepted
+coarse parent; it does not remove documents or change their production labels.
+
+\subsection{The floor: a split needs at least two children}
+
+\subsection{The sweep}
+
+\subsection{What the sweep shows}
+
+\subsection{Why the floor alone cannot select a setting}
+\label{sec:rq3-floorlimit}
+
+\subsection{The ceiling: do the children differ from one another?}
+\label{sec:rq3-ceiling}
+
+\subsection{Both bounds at once: counting real splits}
+\label{sec:rq3-joint}
+
+\subsection{Which of the two measures actually locates a setting}
+\label{sec:rq3-null}
+
+\subsection{What this does to the German answer}
+\label{sec:rq3-german}
+
+\subsection{Answer to RQ3}
+

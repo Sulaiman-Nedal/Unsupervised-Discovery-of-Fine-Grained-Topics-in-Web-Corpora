@@ -1,0 +1,87 @@
+% Discovery flow in scripts/run_bertopic.py. Existing vectors are reused;
+% cleaned text supplies the c-TF-IDF descriptions. The input example reuses the
+% verified saved page and vector from Figure 5; the flow describes the full sample.
+\noindent\begin{minipage}{\linewidth}
+\centering
+\begin{tikzpicture}[
+  stage/.style = {rounded corners=4pt, draw, line width=0.8pt,
+                  text width=2.50cm, minimum height=2.30cm,
+                  align=center, inner xsep=4pt, inner ysep=5pt,
+                  font=\small\sffamily},
+  flow/.style = {-{Stealth[length=2.2mm,width=1.7mm]},
+                 line width=0.9pt, draw=black!65},
+  side/.style = {flow, dashed},
+]
+
+\node[font=\small\sffamily\bfseries, text=accent, align=center,
+      text width=6.2cm] at (3.2,3.65)
+  {Run separately for\\English and German};
+
+\node[stage, minimum height=4.50cm, fill=fillblue, draw=boxblue] (input) at (0,0)
+  {\textbf{1 Input}\\[4pt]
+   Saved E5 vectors\\
+   One real example:\\[5pt]
+   {\footnotesize\ttfamily
+    [\\
+    0.008740,\\
+    0.031677,\\
+    -0.000636,\\
+    -0.018505,\\
+    0.019698,\\
+    \ldots ]}};
+
+\node[stage, fill=fillgreen, draw=boxgreen] (reduce) at (3.2,0)
+  {\textbf{2 UMAP}\\[4pt]
+   Reduce the\\number of\\coordinates};
+
+\node[stage, fill=fillgreen, draw=boxgreen] (cluster) at (6.4,0)
+  {\textbf{3 HDBSCAN}\\[4pt]
+   Find dense\\groups of\\nearby vectors};
+
+\node[stage, fill=black!3, draw=diagray] (words) at (9.6,0)
+  {\textbf{4 Keywords}\\[4pt]
+   Count words\\by topic; rank\\with c-TF-IDF};
+
+\node[stage, minimum height=4.50cm, fill=fillblue, draw=boxblue] (output) at (12.8,0)
+  {\textbf{5 Output}\\[4pt]
+   {\footnotesize\textbf{Shown page}\\[3pt]
+    \ttfamily
+    uuid: ...3b2f\\
+    topic\_id: -1\\
+    topic\_weights:\\
+    0.0}\\[6pt]
+   {\footnotesize\textbf{Another topic: 85}\\[3pt]
+    robot, path,\\
+    control, \ldots}};
+
+\draw[flow] (input.east) -- (reduce.west);
+\draw[flow] (reduce.east) -- (cluster.west);
+\draw[flow] (cluster.east) -- (words.west);
+\draw[flow] (words.east) -- (output.west);
+
+\node[stage, text width=4.70cm, minimum width=5.10cm,
+      minimum height=2.60cm, fill=black!3, draw=diagray,
+      align=left, font=\footnotesize\sffamily] (text) at (9.6,4.10)
+  {\textbf{Cleaned body text}\\[4pt]
+   Example from the same page:\\[3pt]
+   \textit{This section shows video clips of experiments in which the path of robot arm
+   is refined by camera images.}};
+\draw[side, draw=diagray] (text.south) -- (words.north);
+
+\node[stage, text width=7.20cm, minimum height=1.15cm,
+      fill=fillred, draw=boxred] (noise) at (6.4,-2.55)
+  {\textbf{Noise label $-1$}\\[3pt]
+   Keep these pages for labeling (Section~\ref{sec:method-coverage})};
+\draw[side, draw=boxred] (cluster.south) -- (noise.north);
+
+\end{tikzpicture}
+\captionof{figure}{BERTopic discovery on one language sample. \measured{} The input examples
+reuse the robotics page from Figure~\ref{fig:embedding-chunks}: its saved vector and a
+cleaned-text excerpt. Only the first five vector values are shown, rounded; the vector
+represents the full page. All sampled pages are processed together. The displayed page
+received $-1$ during discovery and continues to document labeling
+(Section~\ref{sec:method-coverage}). Its output row comes from \texttt{doc\_topics.parquet},
+with the page ID shortened here. The separate keyword example for topic 85 comes from
+\texttt{topic\_top\_words.json} and describes other sampled pages.}
+\label{fig:bertopic-pipeline}
+\end{minipage}
